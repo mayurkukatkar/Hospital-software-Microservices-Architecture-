@@ -1,0 +1,204 @@
+version: '3.8'
+
+services:
+  # --- Infrastructure Services ---
+  discovery-server:
+    build: backend/discovery-server
+    container_name: mayur-discovery
+    ports:
+      - "8761:8761"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    networks:
+      - mayur-net
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8761/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  config-server:
+    build: backend/config-server
+    container_name: mayur-config
+    ports:
+      - "8888:8888"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
+    depends_on:
+      discovery-server:
+        condition: service_healthy
+    networks:
+      - mayur-net
+
+  api-gateway:
+    build: backend/api-gateway
+    container_name: mayur-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
+    depends_on:
+      discovery-server:
+        condition: service_healthy
+    networks:
+      - mayur-net
+
+  # --- Core Domain Services ---
+  identity-service:
+    build: backend/identity-service
+    container_name: mayur-identity
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
+    depends_on:
+      discovery-server:
+        condition: service_healthy
+    networks:
+      - mayur-net
+
+  patient-service:
+    build: backend/patient-service
+    container_name: mayur-patient
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
+    depends_on:
+      discovery-server:
+        condition: service_healthy
+    networks:
+      - mayur-net
+
+  appointment-service:
+    build: backend/appointment-service
+    container_name: mayur-appointment
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
+    depends_on:
+      discovery-server:
+        condition: service_healthy
+    networks:
+      - mayur-net
+
+  billing-service:
+    build: backend/billing-service
+    container_name: mayur-billing
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
+    depends_on:
+      discovery-server:
+        condition: service_healthy
+    networks:
+      - mayur-net
+
+  emr-service:
+    build: backend/emr-service
+    container_name: mayur-emr
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
+    depends_on:
+      discovery-server:
+        condition: service_healthy
+    networks:
+      - mayur-net
+
+  lab-service:
+    build: backend/lab-service
+    container_name: mayur-lab
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
+    depends_on:
+      discovery-server:
+        condition: service_healthy
+    networks:
+      - mayur-net
+
+  pharmacy-service:
+    build: backend/pharmacy-service
+    container_name: mayur-pharmacy
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
+    depends_on:
+      discovery-server:
+        condition: service_healthy
+    networks:
+      - mayur-net
+
+  inventory-service:
+    build: backend/inventory-service
+    container_name: mayur-inventory
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
+    depends_on:
+      discovery-server:
+        condition: service_healthy
+    networks:
+      - mayur-net
+
+  notification-service:
+    build: backend/notification-service
+    container_name: mayur-notification
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
+    depends_on:
+      discovery-server:
+        condition: service_healthy
+    networks:
+      - mayur-net
+
+  audit-service:
+    build: backend/audit-service
+    container_name: mayur-audit
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
+    depends_on:
+      discovery-server:
+        condition: service_healthy
+    networks:
+      - mayur-net
+
+  reporting-service:
+    build: backend/reporting-service
+    container_name: mayur-reporting
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
+    depends_on:
+      discovery-server:
+        condition: service_healthy
+    networks:
+      - mayur-net
+
+  # --- Frontend ---
+  frontend:
+    build: frontend
+    container_name: mayur-frontend
+    ports:
+      - "5173:80"
+    networks:
+      - mayur-net
+
+networks:
+  mayur-net:
+    external: true

@@ -1,0 +1,21 @@
+server:
+  port: 8888
+
+spring:
+  application:
+    name: config-server
+  profiles:
+    active: native # Using filesystem for now
+  cloud:
+    config:
+      server:
+        native:
+          search-locations: classpath:/shared
+        # git:
+        #   uri: https://github.com/mayurkukatkar/Raksha-Config-Repo
+        #   default-label: main
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
